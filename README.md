@@ -1,4 +1,4 @@
-# LogHound 🐾
+# LogHound
 
 [![tests](https://github.com/DanielGit-04/loghound/actions/workflows/tests.yml/badge.svg)](https://github.com/DanielGit-04/loghound/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
