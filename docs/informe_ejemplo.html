@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe LogHound — CASE-2026-001</title>
+<style>
+  :root {
+    --critical: #ef4444;
+    --high: #f97316;
+    --medium: #eab308;
+    --low: #9ca3af;
+    --bg: #0f1117;
+    --panel: #171a23;
+    --border: #2a2e3a;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #22d3ee;
+    --code-bg: #0b0d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0 auto; padding: 40px 24px; line-height: 1.5; max-width: 1100px;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .stat .num { font-size: 28px; font-weight: 700; }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .stat.critical .num { color: var(--critical); }
+  .stat.high .num { color: var(--high); }
+  .stat.medium .num { color: var(--medium); }
+  .stat.low .num { color: var(--low); }
+
+  section { margin-bottom: 40px; }
+  h2 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+
+  .detection {
+    background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--medium);
+    border-radius: 8px; padding: 16px; margin-bottom: 14px;
+  }
+  .detection.critical { border-left-color: var(--critical); }
+  .detection.high { border-left-color: var(--high); }
+  .detection.medium { border-left-color: var(--medium); }
+  .detection.low { border-left-color: var(--low); }
+  .detection-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+  .detection-title { font-weight: 600; font-size: 15px; }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.08);
+    color: var(--muted); text-transform: uppercase; text-decoration: none;
+  }
+  a.mitre-badge, .mitre-badge { color: var(--accent); border: 1px solid var(--accent); }
+  .detection-desc { color: var(--muted); font-size: 13px; margin: 8px 0; }
+  .recommendation { font-size: 13px; margin: 8px 0; padding: 8px 10px; background: rgba(34,211,238,0.07); border-radius: 6px; }
+  .detection-meta { font-size: 12px; color: var(--muted); }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 12px; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; font-size: 11px; overflow-x: auto; margin-top: 8px;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  .hash { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; color: var(--accent); word-break: break-all; }
+  .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+  .rule-tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: rgba(255,255,255,0.08); margin-right: 4px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 16px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 48px; border-top: 1px solid var(--border); padding-top: 16px; }
+
+  @media print {
+    :root { --bg: #fff; --panel: #fff; --border: #ccc; --text: #111; --muted: #444; --accent: #0369a1; --code-bg: #f5f5f5; }
+    body { padding: 0; }
+    details > * { display: block; }
+    details pre { white-space: pre-wrap; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Informe LogHound</h1>
+<div class="subtitle">
+  Caso <strong>CASE-2026-001</strong> · Examinador: <strong>Analista Demo</strong> · Generado (UTC): 2026-11-04T21:57:48Z
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="num">38</div><div class="label">Eventos analizados</div></div>
+  <div class="stat"><div class="num">6</div><div class="label">Detecciones</div></div>
+  <div class="stat critical"><div class="num">1</div><div class="label">Críticas</div></div>
+  <div class="stat high"><div class="num">3</div><div class="label">Altas</div></div>
+  <div class="stat medium"><div class="num">2</div><div class="label">Medias</div></div>
+  <div class="stat low"><div class="num">0</div><div class="label">Bajas</div></div>
+</div>
+
+<section>
+  <h2>Detecciones</h2>
+  
+  
+  <div class="detection critical">
+    <div class="detection-header">
+      <div class="detection-title">[R004] Acceso a memoria de LSASS (posible volcado de credenciales)</div>
+      <div>
+        <span class="badge">critical</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1003/001/" target="_blank" rel="noopener noreferrer">MITRE T1003.001</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Un proceso ha pedido a lsass.exe permisos que permiten leer su memoria. LSASS guarda credenciales en memoria, y este patrón es característico de Mimikatz, ProcDump y herramientas similares de volcado de credenciales.</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Aislar el equipo, identificar el proceso origen (source_image), asumir que las credenciales de las cuentas con sesión en ese equipo están comprometidas y restablecerlas. Valorar activar Credential Guard / LSA PPL.</div>
+    <div class="detection-meta">
+      Entidad: <strong>jgarcia</strong> ·
+      Ventana: 2026-08-10T10:22:00Z → 2026-08-10T10:22:00Z ·
+      Eventos de evidencia: 1
+      
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "computer": "WKS-07",
+    "event_id": 10,
+    "granted_access": "0x1fffff",
+    "process": "procdump.exe",
+    "source_file": "sample_logs.json",
+    "source_image": "C:\\Users\\jgarcia\\AppData\\Local\\Temp\\procdump.exe",
+    "source_ip": "10.0.0.55",
+    "target_image": "C:\\Windows\\System32\\lsass.exe",
+    "timestamp": "2026-08-10T10:22:00Z",
+    "user": "jgarcia"
+  }
+]</pre>
+    </details>
+  </div>
+  
+  <div class="detection high">
+    <div class="detection-header">
+      <div class="detection-title">[R001] Posible Kerberoasting</div>
+      <div>
+        <span class="badge">high</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1558/003/" target="_blank" rel="noopener noreferrer">MITRE T1558.003</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Una misma cuenta ha solicitado Service Tickets (TGS) con cifrado RC4 (0x17) para varias cuentas de servicio distintas en una ventana corta. RC4 es un cifrado débil y este patrón de ráfaga es característico de Kerberoasting (extracción offline de hashes de cuentas de servicio).</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Identificar qué equipo y usuario pidieron los tickets, restablecer las contraseñas de las cuentas de servicio afectadas (usar contraseñas largas o gMSA) y forzar AES en las cuentas de servicio.</div>
+    <div class="detection-meta">
+      Entidad: <strong>attacker_svc</strong> ·
+      Ventana: 2026-08-10T10:05:00Z → 2026-08-10T10:06:20Z ·
+      Eventos de evidencia: 5
+      · target_user distintos (5): svc_backup, svc_backup2, svc_print, svc_sql, svc_web
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "encryption_type": "0x17",
+    "event_id": 4769,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "target_user": "svc_sql",
+    "timestamp": "2026-08-10T10:05:00Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "encryption_type": "0x17",
+    "event_id": 4769,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "target_user": "svc_backup",
+    "timestamp": "2026-08-10T10:05:20Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "encryption_type": "0x17",
+    "event_id": 4769,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "target_user": "svc_web",
+    "timestamp": "2026-08-10T10:05:40Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "encryption_type": "0x17",
+    "event_id": 4769,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "target_user": "svc_print",
+    "timestamp": "2026-08-10T10:06:00Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "encryption_type": "0x17",
+    "event_id": 4769,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "target_user": "svc_backup2",
+    "timestamp": "2026-08-10T10:06:20Z",
+    "user": "attacker_svc"
+  }
+]</pre>
+    </details>
+  </div>
+  
+  <div class="detection high">
+    <div class="detection-header">
+      <div class="detection-title">[R003] Ejecución de PowerShell ofuscado o codificado</div>
+      <div>
+        <span class="badge">high</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1059/001/" target="_blank" rel="noopener noreferrer">MITRE T1059.001</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Se ha ejecutado PowerShell con un comando codificado en Base64 o con técnicas de ofuscación habituales (perfil omitido + ventana oculta), comúnmente usadas para evadir detección basada en firmas.</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Decodificar el Base64 del comando para ver qué ejecuta, revisar el proceso padre y la actividad de red del equipo en ese momento, y aislar el equipo si el contenido es malicioso.</div>
+    <div class="detection-meta">
+      Entidad: <strong>jgarcia</strong> ·
+      Ventana: 2026-08-10T10:20:00Z → 2026-08-10T10:20:00Z ·
+      Eventos de evidencia: 1
+      
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "command_line": "powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA",
+    "computer": "WKS-07",
+    "event_id": 1,
+    "process": "powershell.exe",
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "timestamp": "2026-08-10T10:20:00Z",
+    "user": "jgarcia"
+  }
+]</pre>
+    </details>
+  </div>
+  
+  <div class="detection high">
+    <div class="detection-header">
+      <div class="detection-title">[R006] Borrado del registro de eventos de Windows</div>
+      <div>
+        <span class="badge">high</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1070/001/" target="_blank" rel="noopener noreferrer">MITRE T1070.001</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Se ha borrado un registro de eventos de Windows. Los atacantes lo hacen para eliminar rastros; en un entorno normal es muy poco frecuente.</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Preservar de inmediato los logs que queden (copia con hash), localizar quién y desde qué sesión lo hizo, y buscar copias en el SIEM o en el servidor de reenvío de eventos.</div>
+    <div class="detection-meta">
+      Entidad: <strong>jgarcia</strong> ·
+      Ventana: 2026-08-10T10:45:00Z → 2026-08-10T10:45:00Z ·
+      Eventos de evidencia: 1
+      
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Security",
+    "computer": "WKS-07",
+    "event_id": 1102,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "timestamp": "2026-08-10T10:45:00Z",
+    "user": "jgarcia"
+  }
+]</pre>
+    </details>
+  </div>
+  
+  <div class="detection medium">
+    <div class="detection-header">
+      <div class="detection-title">[R002] Fuerza bruta en logon</div>
+      <div>
+        <span class="badge">medium</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1110/" target="_blank" rel="noopener noreferrer">MITRE T1110</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Múltiples intentos de autenticación fallidos (Event ID 4625) desde la misma IP de origen en una ventana corta, indicativo de fuerza bruta o password spraying.</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Bloquear o limitar la IP de origen, comprobar si algún intento posterior tuvo éxito (Event ID 4624 desde la misma IP) y revisar las cuentas objetivo.</div>
+    <div class="detection-meta">
+      Entidad: <strong>185.220.101.5</strong> ·
+      Ventana: 2026-08-10T09:12:00Z → 2026-08-10T09:13:45Z ·
+      Eventos de evidencia: 8
+      
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:12:00Z",
+    "user": "administrator"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:12:15Z",
+    "user": "admin"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:12:30Z",
+    "user": "root"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:12:45Z",
+    "user": "backup"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:13:00Z",
+    "user": "svc_sql"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:13:15Z",
+    "user": "test"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:13:30Z",
+    "user": "guest"
+  },
+  {
+    "channel": "Security",
+    "computer": "DC01",
+    "event_id": 4625,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "185.220.101.5",
+    "status": "failure",
+    "timestamp": "2026-08-10T09:13:45Z",
+    "user": "operator"
+  }
+]</pre>
+    </details>
+  </div>
+  
+  <div class="detection medium">
+    <div class="detection-header">
+      <div class="detection-title">[R005] Logons de red en varios equipos (posible movimiento lateral)</div>
+      <div>
+        <span class="badge">medium</span>
+        <a class="badge mitre-badge" href="https://attack.mitre.org/techniques/T1021/002/" target="_blank" rel="noopener noreferrer">MITRE T1021.002</a>
+        
+      </div>
+    </div>
+    <div class="detection-desc">Una misma IP de origen ha iniciado sesión de tipo red (logon type 3) en al menos tres equipos distintos en una ventana corta, patrón compatible con movimiento lateral vía SMB/recursos administrativos tras un compromiso inicial.</div>
+    <div class="recommendation"><strong>Recomendación:</strong> Comprobar si la IP de origen es un servidor legítimo de administración o copias de seguridad; si no lo es, aislarla y revisar qué cuentas se usaron y qué se hizo en cada equipo de destino.</div>
+    <div class="detection-meta">
+      Entidad: <strong>10.0.0.55</strong> ·
+      Ventana: 2026-08-10T10:30:00Z → 2026-08-10T10:39:00Z ·
+      Eventos de evidencia: 4
+      · computer distintos (4): FILESERVER, WKS-01, WKS-02, WKS-03
+    </div>
+    <details>
+      <summary>Ver eventos de evidencia (JSON)</summary>
+      <pre>[
+  {
+    "channel": "Security",
+    "computer": "WKS-01",
+    "event_id": 4624,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "status": "success",
+    "timestamp": "2026-08-10T10:30:00Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "WKS-02",
+    "event_id": 4624,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "status": "success",
+    "timestamp": "2026-08-10T10:33:00Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "WKS-03",
+    "event_id": 4624,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "status": "success",
+    "timestamp": "2026-08-10T10:36:00Z",
+    "user": "attacker_svc"
+  },
+  {
+    "channel": "Security",
+    "computer": "FILESERVER",
+    "event_id": 4624,
+    "logon_type": 3,
+    "source_file": "sample_logs.json",
+    "source_ip": "10.0.0.55",
+    "status": "success",
+    "timestamp": "2026-08-10T10:39:00Z",
+    "user": "attacker_svc"
+  }
+]</pre>
+    </details>
+  </div>
+  
+</section>
+
+<section>
+  <h2>Línea de tiempo</h2>
+  
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Hora (UTC)</th><th>Equipo</th><th>Usuario</th><th>Evento</th><th>Reglas</th><th>Detalle</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:12:00Z</td>
+          <td>DC01</td>
+          <td>administrator</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:12:15Z</td>
+          <td>DC01</td>
+          <td>admin</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:12:30Z</td>
+          <td>DC01</td>
+          <td>root</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:12:45Z</td>
+          <td>DC01</td>
+          <td>backup</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:13:00Z</td>
+          <td>DC01</td>
+          <td>svc_sql</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:13:15Z</td>
+          <td>DC01</td>
+          <td>test</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:13:30Z</td>
+          <td>DC01</td>
+          <td>guest</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T09:13:45Z</td>
+          <td>DC01</td>
+          <td>operator</td>
+          <td>4625</td>
+          <td><span class="rule-tag">R002</span></td>
+          <td class="mono">failure</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:05:00Z</td>
+          <td>DC01</td>
+          <td>attacker_svc</td>
+          <td>4769</td>
+          <td><span class="rule-tag">R001</span></td>
+          <td class="mono">svc_sql</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:05:20Z</td>
+          <td>DC01</td>
+          <td>attacker_svc</td>
+          <td>4769</td>
+          <td><span class="rule-tag">R001</span></td>
+          <td class="mono">svc_backup</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:05:40Z</td>
+          <td>DC01</td>
+          <td>attacker_svc</td>
+          <td>4769</td>
+          <td><span class="rule-tag">R001</span></td>
+          <td class="mono">svc_web</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:06:00Z</td>
+          <td>DC01</td>
+          <td>attacker_svc</td>
+          <td>4769</td>
+          <td><span class="rule-tag">R001</span></td>
+          <td class="mono">svc_print</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:06:20Z</td>
+          <td>DC01</td>
+          <td>attacker_svc</td>
+          <td>4769</td>
+          <td><span class="rule-tag">R001</span></td>
+          <td class="mono">svc_backup2</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:20:00Z</td>
+          <td>WKS-07</td>
+          <td>jgarcia</td>
+          <td>1</td>
+          <td><span class="rule-tag">R003</span></td>
+          <td class="mono">powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:22:00Z</td>
+          <td>WKS-07</td>
+          <td>jgarcia</td>
+          <td>10</td>
+          <td><span class="rule-tag">R004</span></td>
+          <td class="mono">C:\Windows\System32\lsass.exe</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:30:00Z</td>
+          <td>WKS-01</td>
+          <td>attacker_svc</td>
+          <td>4624</td>
+          <td><span class="rule-tag">R005</span></td>
+          <td class="mono">success</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:33:00Z</td>
+          <td>WKS-02</td>
+          <td>attacker_svc</td>
+          <td>4624</td>
+          <td><span class="rule-tag">R005</span></td>
+          <td class="mono">success</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:36:00Z</td>
+          <td>WKS-03</td>
+          <td>attacker_svc</td>
+          <td>4624</td>
+          <td><span class="rule-tag">R005</span></td>
+          <td class="mono">success</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:39:00Z</td>
+          <td>FILESERVER</td>
+          <td>attacker_svc</td>
+          <td>4624</td>
+          <td><span class="rule-tag">R005</span></td>
+          <td class="mono">success</td>
+        </tr>
+        
+        <tr>
+          <td class="mono">2026-08-10T10:45:00Z</td>
+          <td>WKS-07</td>
+          <td>jgarcia</td>
+          <td>1102</td>
+          <td><span class="rule-tag">R006</span></td>
+          <td class="mono"></td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+</section>
+
+<section>
+  <h2>Cadena de custodia</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Fichero</th><th>Tipo</th><th>SHA-256</th><th>Tamaño (bytes)</th><th>Hash calculado (UTC)</th></tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>sample_logs.json</td>
+          <td>log</td>
+          <td class="hash">08dfb00beb02d08cdd6d1864b7b040e9f5bb4d4d22ab43a7e6765756f650ea08</td>
+          <td>8050</td>
+          <td>2026-11-04T21:57:48Z</td>
+        </tr>
+        
+        <tr>
+          <td>detection_rules.yaml</td>
+          <td>rules</td>
+          <td class="hash">4abf65d3e8f65c5b73b4e2862eb6009d23523b44d01008afa1b2a88189af4078</td>
+          <td>6647</td>
+          <td>2026-11-04T21:57:48Z</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <details style="margin-top: 16px;">
+    <summary>Ver registro de acciones hasta la generación de este informe</summary>
+    <pre>[
+  {
+    "description": "Evidencia registrada (log): sample_logs.json (sha256=08dfb00beb02...)",
+    "timestamp": "2026-11-04T21:57:48Z"
+  },
+  {
+    "description": "Evidencia registrada (rules): detection_rules.yaml (sha256=4abf65d3e8f6...)",
+    "timestamp": "2026-11-04T21:57:48Z"
+  },
+  {
+    "description": "Logs parseados correctamente: 38 eventos.",
+    "timestamp": "2026-11-04T21:57:48Z"
+  },
+  {
+    "description": "Reglas cargadas: 6 reglas.",
+    "timestamp": "2026-11-04T21:57:48Z"
+  },
+  {
+    "description": "Motor de reglas ejecutado: 6 detecciones generadas.",
+    "timestamp": "2026-11-04T21:57:48Z"
+  },
+  {
+    "description": "Generando informe HTML.",
+    "timestamp": "2026-11-04T21:57:48Z"
+  }
+]</pre>
+  </details>
+
+  <p class="note">
+    Este informe <strong>no puede contener su propio hash</strong> (cambiaría al escribirlo). El SHA-256 de este
+    fichero y la firma digital se guardan en el manifiesto definitivo <code>chain_of_custody.json</code>, que se
+    genera justo después. Para comprobar que ni el informe ni el manifiesto se han alterado:
+    <code>python -m loghound.cli verify --manifest chain_of_custody.json --public-key &lt;clave_publica.pem&gt;</code>
+  </p>
+</section>
+
+<footer>
+  Generado con LogHound v0.2.0 — herramienta de análisis forense/defensivo. Uso exclusivo en entornos autorizados.
+  Las detecciones son indicios que deben ser validados por un analista, no conclusiones definitivas.
+</footer>
+
+</body>
+</html>

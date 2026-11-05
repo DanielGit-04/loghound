@@ -1,0 +1,26 @@
+# Entornos virtuales y caché de Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Resultados generados por la herramienta (cada análisis crea los suyos)
+output/*
+!output/.gitkeep
+
+# ⚠️ CLAVES: nunca deben subirse al repositorio
+keys/
+*.pem
+*.key
+*_private*
+.env

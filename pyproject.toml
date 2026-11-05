@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loghound"
+dynamic = ["version"]
+description = "Analizador forense de logs de Windows con detecciones MITRE ATT&CK y cadena de custodia firmada"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "click>=8.1.0",
+    "PyYAML>=6.0",
+    "Jinja2>=3.1.0",
+    "rich>=13.0.0",
+    "cryptography>=41.0.0",
+]
+
+[project.scripts]
+loghound = "loghound.cli:cli"
+
+[tool.setuptools]
+packages = ["loghound"]
+
+[tool.setuptools.package-data]
+loghound = ["templates/*.html"]
+
+[tool.setuptools.dynamic]
+version = { attr = "loghound.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

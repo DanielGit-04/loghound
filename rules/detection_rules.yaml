@@ -1,0 +1,162 @@
+# Reglas de detección de LogHound.
+#
+# Para añadir una regla nueva no hace falta tocar código: copia una de las de
+# abajo, cambia el id y las condiciones, y ejecuta de nuevo el análisis.
+# Las condiciones disponibles están documentadas en loghound/rules_engine.py
+# y en el README (sección "Escribir tus propias reglas").
+#
+# Campos que se esperan en los logs: ver README (sección "Formato de log").
+
+rules:
+  # ---------------------------------------------------------------------
+  - id: R001
+    name: "Posible Kerberoasting"
+    mitre: "T1558.003"
+    severity: high
+    type: threshold
+    match:
+      event_id: 4769
+      field_equals:
+        encryption_type: "0x17"
+      # Se ignoran tickets pedidos para cuentas de equipo (terminan en $) y krbtgt
+      exclude:
+        - field_endswith:
+            target_user: ["$"]
+        - field_equals:
+            target_user: "krbtgt"
+    group_by: user
+    window_seconds: 300
+    threshold: 5
+    distinct_field: target_user
+    distinct_threshold: 3
+    description: >
+      Una misma cuenta ha solicitado Service Tickets (TGS) con cifrado RC4 (0x17)
+      para varias cuentas de servicio distintas en una ventana corta. RC4 es un
+      cifrado débil y este patrón de ráfaga es característico de Kerberoasting
+      (extracción offline de hashes de cuentas de servicio).
+    recommendation: >
+      Identificar qué equipo y usuario pidieron los tickets, restablecer las
+      contraseñas de las cuentas de servicio afectadas (usar contraseñas largas
+      o gMSA) y forzar AES en las cuentas de servicio.
+
+  # ---------------------------------------------------------------------
+  - id: R002
+    name: "Fuerza bruta en logon"
+    mitre: "T1110"
+    severity: medium
+    type: threshold
+    match:
+      event_id: 4625
+      exclude:
+        field_in:
+          source_ip: ["-", "::1", "127.0.0.1"]
+    group_by: source_ip
+    window_seconds: 120
+    threshold: 8
+    description: >
+      Múltiples intentos de autenticación fallidos (Event ID 4625) desde la
+      misma IP de origen en una ventana corta, indicativo de fuerza bruta o
+      password spraying.
+    recommendation: >
+      Bloquear o limitar la IP de origen, comprobar si algún intento posterior
+      tuvo éxito (Event ID 4624 desde la misma IP) y revisar las cuentas objetivo.
+
+  # ---------------------------------------------------------------------
+  - id: R003
+    name: "Ejecución de PowerShell ofuscado o codificado"
+    mitre: "T1059.001"
+    severity: high
+    type: simple
+    match:
+      event_id: 1
+      # Deben cumplirse las DOS condiciones: es PowerShell Y lleva algo sospechoso.
+      field_regex_all:
+        command_line:
+          # 1) El ejecutable es powershell o pwsh
+          - '(?:^|[\\/\s"''])(?:powershell|pwsh)(?:\.exe)?(?:["''\s]|$)'
+          # 2) Comando codificado (-e / -ec / -enc / -EncodedCommand seguido de Base64
+          #    largo; así no salta con "-Encoding utf8"), FromBase64String,
+          #    o la combinación -NoProfile + ventana oculta.
+          - '\s-(?:e|ec|en\w*)\s+[A-Za-z0-9+/=]{16,}|frombase64string|\s-nop\w*\s.*-w\w*\s+hidden'
+    description: >
+      Se ha ejecutado PowerShell con un comando codificado en Base64 o con
+      técnicas de ofuscación habituales (perfil omitido + ventana oculta),
+      comúnmente usadas para evadir detección basada en firmas.
+    recommendation: >
+      Decodificar el Base64 del comando para ver qué ejecuta, revisar el proceso
+      padre y la actividad de red del equipo en ese momento, y aislar el equipo
+      si el contenido es malicioso.
+
+  # ---------------------------------------------------------------------
+  - id: R004
+    name: "Acceso a memoria de LSASS (posible volcado de credenciales)"
+    mitre: "T1003.001"
+    severity: critical
+    type: simple
+    match:
+      event_id: 10   # Sysmon: ProcessAccess
+      field_regex:
+        target_image: ['(?:^|[\\/])lsass\.exe$']
+      # Solo accesos con permisos de lectura de memoria (GrantedAccess de Sysmon).
+      # Los accesos con permisos mínimos (p. ej. 0x1000) son habituales y no se alertan.
+      field_in:
+        granted_access: ["0x1010", "0x1410", "0x1438", "0x143a", "0x1f0fff", "0x1f3fff", "0x1fffff"]
+      exclude:
+        field_regex:
+          source_image: ['\\(?:MsMpEng|MpDefenderCoreService)\.exe$']
+    description: >
+      Un proceso ha pedido a lsass.exe permisos que permiten leer su memoria.
+      LSASS guarda credenciales en memoria, y este patrón es característico de
+      Mimikatz, ProcDump y herramientas similares de volcado de credenciales.
+    recommendation: >
+      Aislar el equipo, identificar el proceso origen (source_image), asumir que
+      las credenciales de las cuentas con sesión en ese equipo están
+      comprometidas y restablecerlas. Valorar activar Credential Guard / LSA PPL.
+
+  # ---------------------------------------------------------------------
+  - id: R005
+    name: "Logons de red en varios equipos (posible movimiento lateral)"
+    mitre: "T1021.002"
+    severity: medium
+    type: threshold
+    match:
+      event_id: 4624
+      field_equals:
+        logon_type: "3"
+      exclude:
+        - field_in:
+            source_ip: ["-", "::1", "127.0.0.1"]
+        - field_endswith:
+            user: ["$"]
+        - field_equals:
+            user: "ANONYMOUS LOGON"
+    group_by: source_ip
+    window_seconds: 600
+    threshold: 4
+    distinct_field: computer
+    distinct_threshold: 3
+    description: >
+      Una misma IP de origen ha iniciado sesión de tipo red (logon type 3) en
+      al menos tres equipos distintos en una ventana corta, patrón compatible
+      con movimiento lateral vía SMB/recursos administrativos tras un
+      compromiso inicial.
+    recommendation: >
+      Comprobar si la IP de origen es un servidor legítimo de administración o
+      copias de seguridad; si no lo es, aislarla y revisar qué cuentas se
+      usaron y qué se hizo en cada equipo de destino.
+
+  # ---------------------------------------------------------------------
+  - id: R006
+    name: "Borrado del registro de eventos de Windows"
+    mitre: "T1070.001"
+    severity: high
+    type: simple
+    match:
+      event_id: [1102, 104]   # 1102: log Security borrado; 104: otro log borrado
+    description: >
+      Se ha borrado un registro de eventos de Windows. Los atacantes lo hacen
+      para eliminar rastros; en un entorno normal es muy poco frecuente.
+    recommendation: >
+      Preservar de inmediato los logs que queden (copia con hash), localizar
+      quién y desde qué sesión lo hizo, y buscar copias en el SIEM o en el
+      servidor de reenvío de eventos.

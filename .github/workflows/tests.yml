@@ -1,0 +1,30 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+      - name: Ejecutar tests
+        run: python -m pytest -q
+      - name: Prueba de humo con los datos de ejemplo
+        run: |
+          python -m loghound.cli keygen --out-dir /tmp/keys
+          python -m loghound.cli analyze --logs sample_data/sample_logs.json --rules rules/detection_rules.yaml \
+            --examiner "CI" --case-id CI-001 --output /tmp/out/report.html --sign-key /tmp/keys/examiner_private.pem
+          python -m loghound.cli verify --manifest /tmp/out/chain_of_custody.json \
+            --public-key /tmp/keys/examiner_public.pem --evidence-dir sample_data --require-signature
